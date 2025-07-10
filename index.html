@@ -48,6 +48,12 @@
                 <label for="profitPerEmployeeMin">Minimum Profit Per Employee (£)</label>
                 <input type="number" id="profitPerEmployeeMin" name="profitPerEmployeeMin" placeholder="e.g., 10000">
             </div>
+
+            <div class="filter-group">
+                <label for="phoneNumber">Phone Number for SMS Link</label>
+                <input type="tel" id="phoneNumber" name="phoneNumber" placeholder="e.g., +447123456789">
+                <small>We'll text you a link to your leads.</small>
+            </div>
         </aside>
 
         <main class="main-content">
@@ -63,9 +69,10 @@
                 <p><strong>SIC Codes:</strong> <span id="summarySicCodes">Not set</span></p>
                 <p><strong>Location:</strong> <span id="summaryLocation">Not set</span></p>
                 <p><strong>Min Profit Per Employee:</strong> <span id="summaryProfitPerEmployee">Not set</span></p>
+                <p><strong>Phone Number:</strong> <span id="summaryPhoneNumber">Not set</span></p>
             </section>
 
-            <button id="sendToWebhookBtn" class="cta-button">Send Criteria to Webhook</button>
+            <button id="sendToWebhookBtn" class="cta-button">Send Request</button>
             <div id="feedbackMessage" class="feedback-message" role="status" aria-live="polite"></div>
         </main>
     </div>

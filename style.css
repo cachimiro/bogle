@@ -46,7 +46,8 @@ body, html {
 }
 
 .filter-group input[type="text"],
-.filter-group input[type="number"] {
+.filter-group input[type="number"],
+.filter-group input[type="tel"] {
     width: 100%;
     padding: 10px;
     border: 1px solid #ccc;

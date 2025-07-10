@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const sicCodesInput = document.getElementById('sicCodes');
     const locationInput = document.getElementById('location');
     const profitPerEmployeeMinInput = document.getElementById('profitPerEmployeeMin');
+    const phoneNumberInput = document.getElementById('phoneNumber'); // Added phone number input
 
     const sendToWebhookBtn = document.getElementById('sendToWebhookBtn');
     const feedbackMessageDiv = document.getElementById('feedbackMessage');
@@ -26,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const summarySicCodes = document.getElementById('summarySicCodes');
     const summaryLocation = document.getElementById('summaryLocation');
     const summaryProfitPerEmployee = document.getElementById('summaryProfitPerEmployee');
+    const summaryPhoneNumber = document.getElementById('summaryPhoneNumber'); // Added phone number summary
 
     // Initial default values from requirements
     const defaultFilters = {
@@ -35,7 +37,8 @@ document.addEventListener('DOMContentLoaded', () => {
         employeesMax: 500,
         sicCodes: "64191", // Default SIC code as a string
         location: "",
-        profitPerEmployeeMin: null
+        profitPerEmployeeMin: null,
+        phoneNumber: "" // Added phone number default
     };
 
     function initializeFilters() {
@@ -46,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sicCodesInput.value = defaultFilters.sicCodes;
         locationInput.value = defaultFilters.location;
         profitPerEmployeeMinInput.value = defaultFilters.profitPerEmployeeMin === null ? '' : defaultFilters.profitPerEmployeeMin;
+        phoneNumberInput.value = defaultFilters.phoneNumber;
 
         // TODO: Initialize sliders here if using a library.
         // For now, input fields will drive the values.
@@ -65,6 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
         summarySicCodes.textContent = sicCodesInput.value || 'Not set';
         summaryLocation.textContent = locationInput.value || 'Not set';
         summaryProfitPerEmployee.textContent = profitPerEmployeeMinInput.value ? `£${parseInt(profitPerEmployeeMinInput.value, 10).toLocaleString()}` : 'Not set';
+        summaryPhoneNumber.textContent = phoneNumberInput.value || 'Not set';
     }
 
     function getFilterData() {
@@ -83,12 +88,21 @@ document.addEventListener('DOMContentLoaded', () => {
             employeesMax: employeesMaxInput.value ? parseInt(employeesMaxInput.value, 10) : null,
             profitPerEmployeeMin: profitPerEmployeeMinInput.value ? parseInt(profitPerEmployeeMinInput.value, 10) : null,
             sicCodesArray: sicCodesArray,
-            location: locationInput.value.trim() === "" ? "" : locationInput.value.trim()
+            location: locationInput.value.trim() === "" ? "" : locationInput.value.trim(),
+            phoneNumber: phoneNumberInput.value.trim() // Added phone number
         };
     }
 
     async function sendDataToWebhook() {
         const filterData = getFilterData();
+
+        // Basic validation for phone number
+        if (!filterData.phoneNumber) {
+            feedbackMessageDiv.textContent = 'Please enter a phone number.';
+            feedbackMessageDiv.className = 'feedback-message error';
+            phoneNumberInput.focus();
+            return;
+        }
 
         feedbackMessageDiv.textContent = '';
         feedbackMessageDiv.className = 'feedback-message'; // Reset classes
@@ -109,8 +123,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Assuming Make.com webhook returns 200 OK on success
                 const responseBody = await response.text(); // Or response.json() if Make returns JSON
                 console.log('Webhook response:', responseBody);
-                feedbackMessageDiv.textContent = 'Data sent successfully to webhook!';
-                feedbackMessageDiv.classList.add('success');
+                // Redirect to confirmation page on success
+                window.location.href = 'confirmation.html';
             } else {
                 const errorText = await response.text();
                 console.error('Webhook error:', response.status, errorText);
@@ -123,12 +137,12 @@ document.addEventListener('DOMContentLoaded', () => {
             feedbackMessageDiv.classList.add('error');
         } finally {
             sendToWebhookBtn.disabled = false;
-            sendToWebhookBtn.textContent = 'Send Criteria to Webhook';
+            sendToWebhookBtn.textContent = 'Send Request'; // Ensure button text is correct
         }
     }
 
     // Event Listeners
-    [revenueMinInput, revenueMaxInput, employeesMinInput, employeesMaxInput, sicCodesInput, locationInput, profitPerEmployeeMinInput].forEach(input => {
+    [revenueMinInput, revenueMaxInput, employeesMinInput, employeesMaxInput, sicCodesInput, locationInput, profitPerEmployeeMinInput, phoneNumberInput].forEach(input => {
         input.addEventListener('input', updateSummary);
         input.addEventListener('change', updateSummary); // For number inputs that might change on blur
     });
