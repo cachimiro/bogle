@@ -22,8 +22,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            // Construct the API URL. Ensure this matches your backend route.
-            const response = await fetch(`/api/get_leads/${taskId}`);
+            // Ensure backend is running on port 5001 as configured in backend/app.py
+            const BACKEND_BASE_URL = 'http://localhost:5001';
+            const response = await fetch(`${BACKEND_BASE_URL}/api/get_leads/${taskId}`);
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({ message: response.statusText }));

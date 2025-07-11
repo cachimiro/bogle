@@ -10,9 +10,14 @@ from twilio.rest import Client
 import re # For regex operations in domain derivation
 from urllib.parse import urlparse # For parsing URLs to get domain
 
+from flask_cors import CORS # Import CORS
+
 load_dotenv()
 
 app = Flask(__name__)
+CORS(app) # Enable CORS for all routes by default for development
+          # For production, you might want to restrict origins: CORS(app, resources={r"/api/*": {"origins": "http://localhost:8000"}})
+
 COMPANIES_HOUSE_API_URL = "https://api.company-information.service.gov.uk"
 ANYMAILFINDER_API_URL = "https://api.anymailfinder.com/v5.0"
 
@@ -389,10 +394,10 @@ def make_companies_house_request(endpoint, params=None):
                 time.sleep(5) # Wait before retrying connection error
                 continue
             break
-        except requests.exceptions.Timeout as timeout_err:
-            app.logger.error(f"CH Timeout error: {timeout_err}")
-        except requests.exceptions.RequestException as req_err:
-            app.logger.error(f"CH Request error: {req_err}")
+    except requests.exceptions.Timeout as timeout_err:
+        app.logger.error(f"CH Timeout error: {timeout_err}")
+    except requests.exceptions.RequestException as req_err:
+        app.logger.error(f"CH Request error: {req_err}")
     return None
 
 def make_anymailfinder_request(params=None):
@@ -426,9 +431,14 @@ def make_anymailfinder_request(params=None):
             app.logger.error(f"Anymailfinder Timeout error on attempt {attempt + 1}: {timeout_err}")
             # Decide if retry on timeout is useful, for now, fail
             break
-        except requests.exceptions.RequestException as req_err:
-            app.logger.error(f"Anymailfinder Request error: {req_err}")
-    return None
+        except requests.exceptions.RequestException as req_err: # Ensure this is at the same level as other excepts in the loop
+            app.logger.error(f"Anymailfinder Request error on attempt {attempt + 1}: {req_err}")
+            if attempt < retries:
+                time.sleep(5) # Generic wait for other request exceptions before retry
+                continue
+            break # Break if retries exhausted or it's a non-retryable request exception
+
+    return None # Default return if loop finishes without success
 
 def extract_domain_from_url(website_url):
     """Extracts the domain (e.g., example.com) from a full URL."""

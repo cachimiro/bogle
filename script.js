@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     // Configuration
-    const SUBMIT_CRITERIA_URL = '/api/submit_criteria'; // Updated to new backend endpoint
+    // Ensure backend is running on port 5001 as configured in backend/app.py
+    const BACKEND_BASE_URL = 'http://localhost:5001';
+    const SUBMIT_CRITERIA_URL = `${BACKEND_BASE_URL}/api/submit_criteria`;
 
     // DOM Elements
     const revenueMinInput = document.getElementById('revenueMin');
