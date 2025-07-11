@@ -54,6 +54,42 @@
                 <input type="tel" id="phoneNumber" name="phoneNumber" placeholder="e.g., +447123456789">
                 <small>We'll text you a link to your leads.</small>
             </div>
+
+            <div class="filter-group">
+                <label>Budget End Date (Accounting Reference Date)</label>
+                <div>
+                    <input type="radio" id="budgetEndMonthRadio" name="budgetEndDateSearchType" value="month" checked>
+                    <label for="budgetEndMonthRadio" class="radio-label">Specific Month</label>
+                </div>
+                <div id="budgetEndMonthSelector" class="conditional-filter-inputs">
+                    <select id="budgetEndMonth" name="budgetEndMonth">
+                        <option value="">-- Select Month --</option>
+                        <option value="1">January</option>
+                        <option value="2">February</option>
+                        <option value="3">March</option>
+                        <option value="4">April</option>
+                        <option value="5">May</option>
+                        <option value="6">June</option>
+                        <option value="7">July</option>
+                        <option value="8">August</option>
+                        <option value="9">September</option>
+                        <option value="10">October</option>
+                        <option value="11">November</option>
+                        <option value="12">December</option>
+                    </select>
+                </div>
+                <div>
+                    <input type="radio" id="budgetEndRangeRadio" name="budgetEndDateSearchType" value="range">
+                    <label for="budgetEndRangeRadio" class="radio-label">Date Range</label>
+                </div>
+                <div id="budgetEndRangeSelector" class="conditional-filter-inputs" style="display: none;">
+                    <label for="budgetEndStartDate" class="sub-label">From:</label>
+                    <input type="date" id="budgetEndStartDate" name="budgetEndStartDate">
+                    <label for="budgetEndEndDate" class="sub-label">To:</label>
+                    <input type="date" id="budgetEndEndDate" name="budgetEndEndDate">
+                </div>
+            </div>
+
         </aside>
 
         <main class="main-content">
@@ -70,6 +106,7 @@
                 <p><strong>Location:</strong> <span id="summaryLocation">Not set</span></p>
                 <p><strong>Min Profit Per Employee:</strong> <span id="summaryProfitPerEmployee">Not set</span></p>
                 <p><strong>Phone Number:</strong> <span id="summaryPhoneNumber">Not set</span></p>
+                <p><strong>Budget End Date Filter:</strong> <span id="summaryBudgetEndDate">Not set</span></p>
             </section>
 
             <button id="sendToWebhookBtn" class="cta-button">Send Request</button>

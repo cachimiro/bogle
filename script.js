@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     // Configuration
-    const WEBHOOK_URL = 'https://hook.eu2.make.com/gk8lgjcb4a5u4mug7389a4h17yd5mced';
+    const SUBMIT_CRITERIA_URL = '/api/submit_criteria'; // Updated to new backend endpoint
 
     // DOM Elements
     const revenueMinInput = document.getElementById('revenueMin');
@@ -16,7 +16,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const sicCodesInput = document.getElementById('sicCodes');
     const locationInput = document.getElementById('location');
     const profitPerEmployeeMinInput = document.getElementById('profitPerEmployeeMin');
-    const phoneNumberInput = document.getElementById('phoneNumber'); // Added phone number input
+    const phoneNumberInput = document.getElementById('phoneNumber');
+
+    // Budget End Date elements
+    const budgetEndMonthRadio = document.getElementById('budgetEndMonthRadio');
+    const budgetEndRangeRadio = document.getElementById('budgetEndRangeRadio');
+    const budgetEndMonthSelectorDiv = document.getElementById('budgetEndMonthSelector');
+    const budgetEndRangeSelectorDiv = document.getElementById('budgetEndRangeSelector');
+    const budgetEndMonthInput = document.getElementById('budgetEndMonth');
+    const budgetEndStartDateInput = document.getElementById('budgetEndStartDate');
+    const budgetEndEndDateInput = document.getElementById('budgetEndEndDate');
 
     const sendToWebhookBtn = document.getElementById('sendToWebhookBtn');
     const feedbackMessageDiv = document.getElementById('feedbackMessage');
@@ -27,7 +36,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const summarySicCodes = document.getElementById('summarySicCodes');
     const summaryLocation = document.getElementById('summaryLocation');
     const summaryProfitPerEmployee = document.getElementById('summaryProfitPerEmployee');
-    const summaryPhoneNumber = document.getElementById('summaryPhoneNumber'); // Added phone number summary
+    const summaryPhoneNumber = document.getElementById('summaryPhoneNumber');
+    const summaryBudgetEndDate = document.getElementById('summaryBudgetEndDate'); // Added Budget End Date summary
 
     // Initial default values from requirements
     const defaultFilters = {
@@ -35,10 +45,14 @@ document.addEventListener('DOMContentLoaded', () => {
         revenueMax: 600000000,
         employeesMin: 30,
         employeesMax: 500,
-        sicCodes: "64191", // Default SIC code as a string
+        sicCodes: "64191",
         location: "",
         profitPerEmployeeMin: null,
-        phoneNumber: "" // Added phone number default
+        phoneNumber: "",
+        budgetEndDateSearchType: "month", // Default search type
+        budgetEndMonth: "",
+        budgetEndStartDate: "",
+        budgetEndEndDate: ""
     };
 
     function initializeFilters() {
@@ -51,10 +65,25 @@ document.addEventListener('DOMContentLoaded', () => {
         profitPerEmployeeMinInput.value = defaultFilters.profitPerEmployeeMin === null ? '' : defaultFilters.profitPerEmployeeMin;
         phoneNumberInput.value = defaultFilters.phoneNumber;
 
-        // TODO: Initialize sliders here if using a library.
-        // For now, input fields will drive the values.
+        // Budget End Date Filters
+        budgetEndMonthRadio.checked = defaultFilters.budgetEndDateSearchType === 'month';
+        budgetEndRangeRadio.checked = defaultFilters.budgetEndDateSearchType === 'range';
+        budgetEndMonthInput.value = defaultFilters.budgetEndMonth;
+        budgetEndStartDateInput.value = defaultFilters.budgetEndStartDate;
+        budgetEndEndDateInput.value = defaultFilters.budgetEndEndDate;
+        toggleBudgetEndSelectors(); // Show/hide based on initial radio state
 
         updateSummary();
+    }
+
+    function toggleBudgetEndSelectors() {
+        if (budgetEndMonthRadio.checked) {
+            budgetEndMonthSelectorDiv.style.display = 'block';
+            budgetEndRangeSelectorDiv.style.display = 'none';
+        } else if (budgetEndRangeRadio.checked) {
+            budgetEndMonthSelectorDiv.style.display = 'none';
+            budgetEndRangeSelectorDiv.style.display = 'block';
+        }
     }
 
     function updateSummary() {
@@ -70,6 +99,16 @@ document.addEventListener('DOMContentLoaded', () => {
         summaryLocation.textContent = locationInput.value || 'Not set';
         summaryProfitPerEmployee.textContent = profitPerEmployeeMinInput.value ? `£${parseInt(profitPerEmployeeMinInput.value, 10).toLocaleString()}` : 'Not set';
         summaryPhoneNumber.textContent = phoneNumberInput.value || 'Not set';
+
+        // Budget End Date Summary
+        if (budgetEndMonthRadio.checked && budgetEndMonthInput.value) {
+            const monthName = budgetEndMonthInput.options[budgetEndMonthInput.selectedIndex].text;
+            summaryBudgetEndDate.textContent = `Month: ${monthName}`;
+        } else if (budgetEndRangeRadio.checked && (budgetEndStartDateInput.value || budgetEndEndDateInput.value)) {
+            summaryBudgetEndDate.textContent = `Range: ${budgetEndStartDateInput.value || 'N/A'} to ${budgetEndEndDateInput.value || 'N/A'}`;
+        } else {
+            summaryBudgetEndDate.textContent = 'Not set';
+        }
     }
 
     function getFilterData() {
@@ -89,7 +128,11 @@ document.addEventListener('DOMContentLoaded', () => {
             profitPerEmployeeMin: profitPerEmployeeMinInput.value ? parseInt(profitPerEmployeeMinInput.value, 10) : null,
             sicCodesArray: sicCodesArray,
             location: locationInput.value.trim() === "" ? "" : locationInput.value.trim(),
-            phoneNumber: phoneNumberInput.value.trim() // Added phone number
+            phoneNumber: phoneNumberInput.value.trim(),
+            budgetEndDateSearchType: budgetEndMonthRadio.checked ? "month" : "range",
+            budgetEndMonth: budgetEndMonthRadio.checked ? (budgetEndMonthInput.value || null) : null,
+            budgetEndStartDate: budgetEndRangeRadio.checked ? (budgetEndStartDateInput.value || null) : null,
+            budgetEndEndDate: budgetEndRangeRadio.checked ? (budgetEndEndDateInput.value || null) : null
         };
     }
 
@@ -111,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
             sendToWebhookBtn.disabled = true;
             sendToWebhookBtn.textContent = 'Sending...';
 
-            const response = await fetch(WEBHOOK_URL, {
+            const response = await fetch(SUBMIT_CRITERIA_URL, { // Changed to SUBMIT_CRITERIA_URL
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -119,16 +162,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify(filterData),
             });
 
-            if (response.ok) {
-                // Assuming Make.com webhook returns 200 OK on success
-                const responseBody = await response.text(); // Or response.json() if Make returns JSON
-                console.log('Webhook response:', responseBody);
+            const responseData = await response.json(); // Expecting JSON response from our backend
+
+            if (response.ok && responseData.status === 'success') {
+                console.log('Backend response:', responseData);
                 // Redirect to confirmation page on success
                 window.location.href = 'confirmation.html';
             } else {
-                const errorText = await response.text();
-                console.error('Webhook error:', response.status, errorText);
-                feedbackMessageDiv.textContent = `Error sending data: ${response.status} ${errorText || response.statusText}`;
+                console.error('Backend error:', response.status, responseData);
+                const errorMessage = responseData.message || `Error: ${response.status}`;
+                feedbackMessageDiv.textContent = `Error submitting criteria: ${errorMessage}`;
                 feedbackMessageDiv.classList.add('error');
             }
         } catch (error) {
@@ -142,9 +185,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Event Listeners
-    [revenueMinInput, revenueMaxInput, employeesMinInput, employeesMaxInput, sicCodesInput, locationInput, profitPerEmployeeMinInput, phoneNumberInput].forEach(input => {
-        input.addEventListener('input', updateSummary);
-        input.addEventListener('change', updateSummary); // For number inputs that might change on blur
+    const inputsToTrack = [
+        revenueMinInput, revenueMaxInput, employeesMinInput, employeesMaxInput,
+        sicCodesInput, locationInput, profitPerEmployeeMinInput, phoneNumberInput,
+        budgetEndMonthInput, budgetEndStartDateInput, budgetEndEndDateInput
+    ];
+
+    inputsToTrack.forEach(input => {
+        if (input) { // Check if element exists
+            input.addEventListener('input', updateSummary);
+            input.addEventListener('change', updateSummary);
+        }
+    });
+
+    [budgetEndMonthRadio, budgetEndRangeRadio].forEach(radio => {
+        if (radio) {
+            radio.addEventListener('change', () => {
+                toggleBudgetEndSelectors();
+                updateSummary(); // Update summary when radio changes
+            });
+        }
     });
 
     sendToWebhookBtn.addEventListener('click', sendDataToWebhook);
@@ -152,58 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial setup
     initializeFilters();
 
-    // --- Slider Implementation Notes ---
-    // For a better UX with sliders, you'd typically use a library like noUiSlider or similar.
-    // Example with noUiSlider (conceptual - library would need to be added to the project):
-    /*
-    if (typeof noUiSlider !== 'undefined') {
-        // Revenue Slider
-        noUiSlider.create(revenueSlider, {
-            start: [defaultFilters.revenueMin, defaultFilters.revenueMax],
-            connect: true,
-            range: { 'min': 0, 'max': 1000000000 }, // Define overall min/max
-            step: 100000, // Define step
-            format: {
-                to: value => Math.round(value),
-                from: value => Number(value)
-            }
-        });
-        revenueSlider.noUiSlider.on('update', (values) => {
-            revenueMinInput.value = values[0];
-            revenueMaxInput.value = values[1];
-            updateSummary();
-        });
-        revenueMinInput.addEventListener('change', () => revenueSlider.noUiSlider.set([revenueMinInput.value, null]));
-        revenueMaxInput.addEventListener('change', () => revenueSlider.noUiSlider.set([null, revenueMaxInput.value]));
-
-        // Employee Slider (similar setup)
-        noUiSlider.create(employeeSlider, {
-            start: [defaultFilters.employeesMin, defaultFilters.employeesMax],
-            connect: true,
-            range: { 'min': 0, 'max': 10000 },
-            step: 1,
-            format: {
-                to: value => Math.round(value),
-                from: value => Number(value)
-            }
-        });
-        employeeSlider.noUiSlider.on('update', (values) => {
-            employeesMinInput.value = values[0];
-            employeesMaxInput.value = values[1];
-            updateSummary();
-        });
-        employeesMinInput.addEventListener('change', () => employeeSlider.noUiSlider.set([employeesMinInput.value, null]));
-        employeesMaxInput.addEventListener('change', () => employeeSlider.noUiSlider.set([null, employeesMaxInput.value]));
-    } else {
-        console.warn('noUiSlider library not found. Sliders will not be initialized.');
-        // Hide slider placeholders if library not present or provide alternative
-        if(document.getElementById('revenueSlider')) document.getElementById('revenueSlider').style.display = 'none';
-        if(document.getElementById('employeeSlider')) document.getElementById('employeeSlider').style.display = 'none';
-    }
-    */
-    // For now, the input fields for Min/Max will work directly without graphical sliders.
-    // If graphical sliders are desired, a library like noUiSlider should be integrated.
-    // Hiding the slider placeholders as no library is currently integrated.
+    // Hiding the graphical slider placeholders as no library is currently integrated.
     const revSliderEl = document.getElementById('revenueSlider');
     const empSliderEl = document.getElementById('employeeSlider');
     if (revSliderEl) revSliderEl.style.display = 'none';

@@ -47,13 +47,16 @@ body, html {
 
 .filter-group input[type="text"],
 .filter-group input[type="number"],
-.filter-group input[type="tel"] {
+.filter-group input[type="tel"],
+.filter-group input[type="date"],
+.filter-group select {
     width: 100%;
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
     box-sizing: border-box; /* Important for width 100% */
     font-size: 0.9em;
+    margin-bottom: 5px; /* Add some space below inputs/selects */
 }
 
 .filter-group input[type="number"] {
@@ -63,6 +66,31 @@ body, html {
 .filter-group input::-webkit-inner-spin-button {
     -webkit-appearance: none; /* Safari and Chrome */
     margin: 0;
+}
+
+.filter-group .radio-label {
+    font-weight: normal;
+    margin-left: 5px;
+    font-size: 0.95em;
+}
+
+.filter-group input[type="radio"] {
+    margin-right: 3px;
+    vertical-align: middle;
+}
+
+.conditional-filter-inputs {
+    padding-left: 20px; /* Indent conditional inputs */
+    margin-top: 5px;
+    margin-bottom: 10px;
+}
+
+.conditional-filter-inputs .sub-label {
+    display: block;
+    font-size: 0.85em;
+    color: #555;
+    margin-top: 5px;
+    margin-bottom: 2px;
 }
 
 
