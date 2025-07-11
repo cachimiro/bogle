@@ -389,10 +389,10 @@ def make_companies_house_request(endpoint, params=None):
                 time.sleep(5) # Wait before retrying connection error
                 continue
             break
-    except requests.exceptions.Timeout as timeout_err:
-        app.logger.error(f"CH Timeout error: {timeout_err}")
-    except requests.exceptions.RequestException as req_err:
-        app.logger.error(f"CH Request error: {req_err}")
+        except requests.exceptions.Timeout as timeout_err:
+            app.logger.error(f"CH Timeout error: {timeout_err}")
+        except requests.exceptions.RequestException as req_err:
+            app.logger.error(f"CH Request error: {req_err}")
     return None
 
 def make_anymailfinder_request(params=None):
@@ -426,8 +426,8 @@ def make_anymailfinder_request(params=None):
             app.logger.error(f"Anymailfinder Timeout error on attempt {attempt + 1}: {timeout_err}")
             # Decide if retry on timeout is useful, for now, fail
             break
-    except requests.exceptions.RequestException as req_err:
-        app.logger.error(f"Anymailfinder Request error: {req_err}")
+        except requests.exceptions.RequestException as req_err:
+            app.logger.error(f"Anymailfinder Request error: {req_err}")
     return None
 
 def extract_domain_from_url(website_url):
