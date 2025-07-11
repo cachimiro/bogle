@@ -1,22 +1,54 @@
 import os
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, make_response
 from dotenv import load_dotenv
-import time
-import threading
-import requests
 from datetime import datetime
-import uuid
+import uuid, time, threading, requests, re
+from urllib.parse import urlparse
 from twilio.rest import Client
-import re # For regex operations in domain derivation
-from urllib.parse import urlparse # For parsing URLs to get domain
 
-from flask_cors import CORS # Import CORS
+# ── CORS ──────────────────────────────────────────────────────
+from flask_cors import CORS, cross_origin
+# ──────────────────────────────────────────────────────────────
 
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app) # Enable CORS for all routes by default for development
-          # For production, you might want to restrict origins: CORS(app, resources={r"/api/*": {"origins": "http://localhost:8000"}})
+
+# 1️⃣  app-wide CORS (good for dev)
+CORS(
+    app,
+    origins="*",
+    supports_credentials=True,
+    allow_headers=["Content-Type", "Authorization"],
+    methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+)
+
+# 2️⃣  OPTIONAL: manual fallback in case something slips past Flask-CORS
+@app.after_request
+def add_cors_headers(resp):
+    resp.headers.setdefault("Access-Control-Allow-Origin", "*")
+    resp.headers.setdefault(
+        "Access-Control-Allow-Headers",
+        "Content-Type,Authorization"
+    )
+    resp.headers.setdefault(
+        "Access-Control-Allow-Methods",
+        "GET,POST,PUT,DELETE,OPTIONS"
+    )
+    return resp
+
+# 3️⃣  Your route must accept OPTIONS
+@app.route("/api/submit_criteria", methods=["POST", "OPTIONS"])
+@cross_origin()                      # decorator = extra safety
+def submit_criteria():
+    if request.method == "OPTIONS":
+        # Pre-flight request; just return 200 with headers
+        return make_response(("", 204))
+    
+    data = request.get_json(force=True)
+    # -- your normal logic here --
+    return jsonify({"ok": True}), 200
+
 
 COMPANIES_HOUSE_API_URL = "https://api.company-information.service.gov.uk"
 ANYMAILFINDER_API_URL = "https://api.anymailfinder.com/v5.0"
@@ -394,10 +426,10 @@ def make_companies_house_request(endpoint, params=None):
                 time.sleep(5) # Wait before retrying connection error
                 continue
             break
-    except requests.exceptions.Timeout as timeout_err:
-        app.logger.error(f"CH Timeout error: {timeout_err}")
-    except requests.exceptions.RequestException as req_err:
-        app.logger.error(f"CH Request error: {req_err}")
+        except requests.exceptions.Timeout as timeout_err:
+            app.logger.error(f"CH Timeout error: {timeout_err}")
+        except requests.exceptions.RequestException as req_err:
+            app.logger.error(f"CH Request error: {req_err}")
     return None
 
 def make_anymailfinder_request(params=None):
