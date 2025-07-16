@@ -546,5 +546,5 @@ def get_leads_route(task_id):
     app.logger.info(f"Returning data for task_id {task_id}: Status - {task_info.get('status')}, Results count - {len(task_info.get('results', [])) if task_info.get('results') is not None else 'N/A'}")
     return jsonify(response_data), 200
 
-if __name__ == '__main__':
-    app.run(debug=True, port=5001)
+#if __name__ == '__main__':
+ #   app.run(debug=True, port=5001)
