@@ -3,3 +3,5 @@ python-dotenv>=0.15
 requests>=2.25
 twilio>=7.0
 Flask-CORS>=3.0
+gunicorn
+
